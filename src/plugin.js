@@ -73,7 +73,7 @@ class RollupIncludePaths {
      */
     options(options) {
         if (this.externalModules.length) {
-            options.external = (options.external||[])
+            options.external = (options.external || [])
                 .concat(this.externalModules);
         }
 
@@ -90,7 +90,7 @@ class RollupIncludePaths {
      *
      * @param {Object} paths
      */
-    copyStaticPathsToCache (staticPaths) {
+    copyStaticPathsToCache(staticPaths) {
         let cache = this.cache;
 
         Object.keys(staticPaths).forEach(function (id) {
@@ -103,7 +103,7 @@ class RollupIncludePaths {
          * @param {string} file
          * @return {string}
          */
-        function resolveJsExtension (file) {
+        function resolveJsExtension(file) {
             if (/\.js$/.test(file) === false) {
                 file += '.js';
             }
@@ -117,7 +117,7 @@ class RollupIncludePaths {
      * @param {string} id
      * @return {string|nulld}
      */
-    resolveCachedPath (id, origin) {
+    resolveCachedPath(id, origin) {
         const key = this.getCacheKey(id, origin);
 
         if (key in this.cache) {
@@ -137,7 +137,7 @@ class RollupIncludePaths {
      * @param {string} file         File path to search
      * @param {string} [origin]     Origin of the module request
      */
-    searchModule (file, origin) {
+    searchModule(file, origin) {
         let newPath =
             this.searchRelativePath(file, origin) ||
             this.searchProjectModule(file, origin);
@@ -162,18 +162,20 @@ class RollupIncludePaths {
      * @param {string} [origin]     Origin of the module request
      * @return {string|null}
      */
-    searchProjectModule (file) {
+    searchProjectModule(file) {
         let newPath;
         let includePath = this.projectPaths;
         let workingDir = process.cwd();
 
-        for (let i = 0, ii = includePath.length; i < ii ; i++) {
+        for (let i = 0, ii = includePath.length; i < ii; i++) {
             newPath = this.resolvePath(path.resolve(workingDir, includePath[i], file), true);
             if (newPath) return newPath;
 
-            // #1 - also check for 'path/to/file' + 'index.js'
-            newPath = this.resolvePath(path.resolve(workingDir, includePath[i], file, 'index.js'), false);
-            if (newPath) return newPath;
+            // #1 - also check for 'path/to/file' + 'index.[file extension]'
+            for (let j = 0, jj = this.extensions.length; j < jj; j++) {
+                newPath = this.resolvePath(path.resolve(workingDir, includePath[i], file, 'index' + this.extensions[j]), false);
+                if (newPath) return newPath;
+            }
         }
 
         return null;
@@ -185,7 +187,7 @@ class RollupIncludePaths {
      * @param {string} file         File path to search
      * @param {string} [origin]     Origin of the module request
      */
-    searchRelativePath (file, origin) {
+    searchRelativePath(file, origin) {
         if (!origin) {
             return null;
         }
@@ -219,13 +221,13 @@ class RollupIncludePaths {
      * @param {boolean} [checkExtensions=false]
      * @return {boolean}
      */
-    resolvePath (file, checkExtensions) {
+    resolvePath(file, checkExtensions) {
         if (this.fileExists(file)) {
             return file;
         }
 
         if (checkExtensions) {
-            for (let i = 0, ii = this.extensions.length; i < ii; i++ ) {
+            for (let i = 0, ii = this.extensions.length; i < ii; i++) {
                 let ext = this.extensions[i];
                 let newPath = file + ext;
 
@@ -243,7 +245,7 @@ class RollupIncludePaths {
      * @param {string} file
      * @return {boolean}
      */
-    hasExtension (file) {
+    hasExtension(file) {
         return this.HAS_EXTENSION.test(file);
     }
 
@@ -251,7 +253,7 @@ class RollupIncludePaths {
      * @param {string} file
      * @return {boolean}
      */
-    fileExists (file) {
+    fileExists(file) {
         try {
             let stat = fs.statSync(file);
             return stat.isFile();

@@ -162,7 +162,9 @@ var RollupIncludePaths = function () {
     }, {
         key: 'getCacheKey',
         value: function getCacheKey(id, origin) {
-            return id[0] === '.' /* id is a relative path */ ? origin + ':' + id : id;
+            var isRelativePath = id.startsWith('.');
+
+            return isRelativePath ? origin + ':' + id : id;
         }
 
         /**
@@ -207,9 +209,11 @@ var RollupIncludePaths = function () {
                 newPath = this.resolvePath(_path2.default.resolve(workingDir, includePath[i], file), true);
                 if (newPath) return newPath;
 
-                // #1 - also check for 'path/to/file' + 'index.js'
-                newPath = this.resolvePath(_path2.default.resolve(workingDir, includePath[i], file, 'index.js'), false);
-                if (newPath) return newPath;
+                // #1 - also check for 'path/to/file' + 'index.[file extension]'
+                for (var j = 0, jj = this.extensions.length; j < jj; j++) {
+                    newPath = this.resolvePath(_path2.default.resolve(workingDir, includePath[i], file, 'index' + this.extensions[j]), false);
+                    if (newPath) return newPath;
+                }
             }
 
             return null;
